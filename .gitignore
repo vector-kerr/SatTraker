@@ -1,3 +1,7 @@
 /.venv
 /settings.ini
 /Satconfig.txt
+
+/libraries/ASICamera2.dll
+/libraries/ASICamera2.lib
+
