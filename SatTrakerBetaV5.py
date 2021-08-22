@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import filedialog
+import configparser
 import ephem
 import math
 import os
@@ -158,9 +159,58 @@ class videotrak:
             roibox = [(searchx1,searchy1), ((searchx1+roiwidth),(searchy1+roiheight))]
             imageroi = thresh.copy()
         return(roibox, imageroi)
+
+
+class AppSettings:
+    def __init__(self):
+        self.settings = configparser.ConfigParser()
+        try:
+            self.settings.read('settings.ini')
+        except:
+            pass
     
+    def _get(self, setting, default=None, section='general'):
+        try:
+            return self.settings[section][setting]
+        except:
+            return default
+
+    @property
+    def protectLocation(self):
+        return int(self._get('protect_location', '1')) == 1
+
+    @property
+    def latitude(self):
+        value = self._get('latitude', None, 'location')
+        if value:
+            return float(value)
+        return None
+
+    @property
+    def longitude(self):
+        value = self._get('longitude', None, 'location')
+        if value:
+            return float(value)
+        return None
+
+
 class buttons:       
     def __init__(self, master):
+
+        self.settings = AppSettings()
+        
+        entrylat_kwargs = {}
+        entrylng_kwargs = {}
+
+        if self.settings.protectLocation:
+            entrylat_kwargs['show'] = entrylng_kwargs['show'] = '*'
+        
+        if self.settings.latitude:
+            trackSettings.Lat = self.settings.latitude
+        
+        if self.settings.longitude:
+            trackSettings.Lon = self.settings.longitude
+
         self.collect_images = False
         self.topframe = Frame(master)
         master.winfo_toplevel().title("SatTraker")
@@ -179,11 +229,11 @@ class buttons:
         
         self.labelLat = Label(self.bottomframe, text='Latitude (N+)')
         self.labelLat.grid(row=5, column = 0)
-        self.entryLat = Entry(self.bottomframe, show="*")
+        self.entryLat = Entry(self.bottomframe, **entrylat_kwargs)
         self.entryLat.grid(row = 5, column = 1)
         self.labelLon = Label(self.bottomframe, text='Longitude (E+)')
         self.labelLon.grid(row=6, column = 0)
-        self.entryLon = Entry(self.bottomframe, show="*")
+        self.entryLon = Entry(self.bottomframe, **entrylat_kwargs)
         self.entryLon.grid(row = 6, column = 1)
         self.recordvideo = IntVar()
         
